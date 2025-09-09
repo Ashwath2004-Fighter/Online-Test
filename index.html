@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IFB Core Technology - Proctored Test</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Fullscreen Overlay -->
+    <div id="fullscreenOverlay">
+        <div class="fullscreen-content">
+            <h2>Fullscreen Mode Required</h2>
+            <p>This proctored test must be taken in fullscreen mode to ensure test integrity and prevent unauthorized activities.</p>
+            <p>Please click the button below to enable fullscreen mode and begin the test.</p>
+            <button class="fullscreen-btn" onclick="requestFullScreenAndPermissions()">Enable Fullscreen Mode & Grant Permissions</button>
+        </div>
+    </div>
+
+    <!-- Timer -->
+    <div class="timer" id="timer">90:00</div>
+
+    <!-- Section Indicator -->
+    <div class="section-indicator" id="sectionIndicator">Section: Aptitude</div>
+    
+    <!-- Time Remaining Indicator -->
+    <div class="time-remaining-indicator" id="timeRemainingIndicator">
+        Time Remaining: <span id="timeRemaining">90:00</span>
+    </div>
+
+    <!-- Webcam Feed -->
+    <div class="webcam-feed" id="webcamFeed">
+        <video id="webcamVideo" autoplay muted></video>
+        <div class="webcam-indicator"></div>
+    </div>
+
+    <!-- Warning Modal -->
+    <div class="warning-modal" id="warningModal">
+        <div class="warning-content">
+            <div class="warning-icon">⚠️</div>
+            <div class="warning-text" id="warningMessage">Tab switching detected. This is not allowed during the test.</div>
+            <button class="btn btn-primary" onclick="closeWarning()">I Understand</button>
+        </div>
+    </div>
+
+    <!-- Termination Modal -->
+    <div class="termination-modal" id="terminationModal">
+        <div class="termination-content">
+            <div class="termination-icon">🚫</div>
+            <div class="termination-text" id="terminationMessage">Test terminated due to multiple violations. You will not be able to complete this test.</div>
+            <button class="btn btn-primary" onclick="closeTermination()">Close</button>
+        </div>
+    </div>
+
+    <!-- Tab Switch Modal -->
+    <div class="tabswitch-modal" id="tabswitchModal">
+        <div class="tabswitch-content">
+            <div class="tabswitch-icon">🚫</div>
+            <div class="tabswitch-text">You have switched tabs during the test. Your test has been terminated.</div>
+            <div class="completion-message">
+                <p>You will be redirected to IFB website in <span id="redirectCountdown">5</span> seconds.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Time Expired Modal -->
+    <div class="time-expired-modal" id="timeExpiredModal">
+        <div class="time-expired-content">
+            <div class="time-expired-icon">⏰</div>
+            <div class="time-expired-text">Your time has expired. The test will now be automatically submitted.</div>
+            <div class="completion-message">
+                <p>You will be redirected to IFB website in <span id="timeExpiredCountdown">5</span> seconds.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="confirmation-modal" id="confirmationModal">
+        <div class="confirmation-content">
+            <div class="confirmation-icon">❓</div>
+            <div class="confirmation-text">Are you sure you want to submit your test? Once submitted, you cannot make any changes.</div>
+            <div class="confirmation-buttons">
+                <button class="btn btn-secondary" onclick="closeConfirmation()">Cancel</button>
+                <button class="btn btn-primary" onclick="confirmSubmission()">Submit Test</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Limit Modal -->
+    <div class="user-limit-modal" id="userLimitModal">
+        <div class="user-limit-content">
+            <div class="user-limit-icon">👥</div>
+            <div class="user-limit-text">Maximum number of test takers reached. Please try again later.</div>
+            <button class="btn btn-primary" onclick="userLimitModal.style.display='none'">OK</button>
+        </div>
+    </div>
+
+    <div class="container" id="mainContainer">
+        <!-- Login Screen -->
+        <div id="loginScreen" class="screen active">
+            <div class="header">
+                <h1>IFB Core Technology</h1>
+                <p>Proctored Online Test - Aptitude, Electronics & C Programming</p>
+            </div>
+
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="Enter your username">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter your password">
+            </div>
+
+            <button class="btn btn-primary" onclick="validateForm()">Continue</button>
+
+            <div class="permission-prompt">
+                <p>This proctored test requires the following permissions:</p>
+                <div class="permission-icons">
+                    <div class="permission-icon">🎤</div>
+                    <div class="permission-icon">📹</div>
+                    <div class="permission-icon">📱</div>
+                </div>
+                <p id="permissionStatus" style="margin-top: 15px; color: #28a745; font-weight: 600;">Permissions already granted!</p>
+            </div>
+        </div>
+
+        <!-- Instructions Screen -->
+        <div id="instructionsScreen" class="screen">
+            <div class="header">
+                <h1>Test Instructions</h1>
+                <p>Please read all instructions carefully before starting the test</p>
+            </div>
+
+            <div class="instructions-container">
+                <h3>Important Instructions:</h3>
+                <ol class="instructions-list">
+                    <li>This test consists of 90 questions divided into three sections: Aptitude (30 questions), Electronics (30 questions), and C Programming (30 questions).</li>
+                    <li>You will have 90 minutes to complete the entire test.</li>
+                    <li>Each question has four options, with only one correct answer.</li>
+                    <li>There is no negative marking for incorrect answers.</li>
+                    <li>You can navigate between questions using the Previous and Next buttons.</li>
+                    <li>Once you complete all questions, click the "Submit Test" button to finish.</li>
+                    <li>The test will automatically submit when the time expires.</li>
+                </ol>
+
+                <div class="instructions-warning">
+                    <h4>⚠️ Important Warning:</h4>
+                    <p>This is a proctored test. Your webcam and microphone will be active throughout the test session.</p>
+                    <p>Do not switch tabs or applications during the test. Any attempt to do so will result in immediate termination of your test.</p>
+                    <p>The test must be taken in fullscreen mode. Exiting fullscreen mode will pause the test until you return to fullscreen.</p>
+                    <p>Pressing the ESC key during the test will immediately terminate the test.</p>
+                </div>
+
+                <h3>Technical Requirements:</h3>
+                <ol class="instructions-list">
+                    <li>Stable internet connection throughout the test</li>
+                    <li>Functional webcam and microphone</li>
+                    <li>Modern browser with JavaScript enabled</li>
+                    <li>Sufficient battery backup or power connection</li>
+                </ol>
+            </div>
+
+            <div class="form-group" style="margin-top: 20px;">
+                <label>
+                    <input type="checkbox" id="agreeCheckbox"> 
+                    I have read and understood all the instructions. I agree to the terms and conditions of this proctored test.
+                </label>
+            </div>
+
+            <button class="btn btn-primary" id="startTestBtn" onclick="startTest()" disabled>Start Test</button>
+        </div>
+
+        <!-- Test Screen -->
+        <div id="testScreen" class="screen">
+            <div class="header">
+                <h1>IFB Core Technology</h1>
+                <p>Proctored Online Test - Aptitude, Electronics & C Programming</p>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <div class="question-container" id="questionContainer">
+                <div class="question-number" id="questionNumber">Question 1 of 90</div>
+                <div class="question-text" id="questionText"></div>
+                <div class="options" id="optionsContainer"></div>
+            </div>
+
+            <div class="navigation">
+                <button class="btn btn-secondary" id="prevBtn" onclick="previousQuestion()" disabled>Previous</button>
+                <div class="question-counter" id="questionCounter">1 / 90</div>
+                <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">Next</button>
+                <button class="btn btn-primary" id="submitTestBtn" onclick="showConfirmation()" style="display: none;">Submit Test</button>
+            </div>
+        </div>
+
+        <!-- Completion Loading Screen -->
+        <div id="completionScreen" class="screen">
+            <div class="loading-screen">
+                <div class="loader"></div>
+                <p class="loading-text">Submitting your test and processing results...</p>
+                <p class="loading-text">Please do not close this window.</p>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="resultsScreen" class="screen">
+            <div class="header">
+                <h1>Test Results</h1>
+                <p>Thank you for completing the test, <span id="resultUsername"></span>!</p>
+            </div>
+
+            <div class="results-summary">
+                <h3>Section-wise Results:</h3>
+                <div class="result-item">
+                    <span class="result-label">Aptitude:</span>
+                    <span class="result-value" id="aptitudeScore">0/0 (0%)</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Electronics:</span>
+                    <span class="result-value" id="electronicsScore">0/0 (0%)</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">C Programming:</span>
+                    <span class="result-value" id="cScore">0/0 (0%)</span>
+                </div>
+                <div class="result-item overall">
+                    <span class="result-label">Overall Score:</span>
+                    <span class="result-value" id="overallScore">0/0 (0%)</span>
+                </div>
+            </div>
+            
+            <div class="completion-message">
+                <p>Your results will be sent to your registered email address within 24 hours.</p>
+                <p>You will be redirected to IFB website in <span id="countdown">5</span> seconds.</p>
+            </div>
+        </div>
+    </div>
+   <script src="script.js"></script>
+</body>
+</html>
